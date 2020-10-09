@@ -1,5 +1,5 @@
 [![Build Status](https://github.com/MikaelSlevinsky/TheFix.jl/workflows/CI/badge.svg)](https://github.com/MikaelSlevinsky/TheFix.jl/actions?query=workflow%3ACI)
-[![codecov](https://codecov.io/gh/MikaelSlevinsky/TheFix.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/MikaelSlevinsky/TheFix.jl)
+[![codecov](https://codecov.io/gh/MikaelSlevinsky/TheFix.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/MikaelSlevinsky/TheFix.jl)
 
 # TheFix.jl
 
