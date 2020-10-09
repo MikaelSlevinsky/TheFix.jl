@@ -1,7 +1,7 @@
+# TheFix.jl
+
 [![Build Status](https://github.com/MikaelSlevinsky/TheFix.jl/workflows/CI/badge.svg)](https://github.com/MikaelSlevinsky/TheFix.jl/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/MikaelSlevinsky/TheFix.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/MikaelSlevinsky/TheFix.jl)
-
-# TheFix.jl
 
 Congratulations! You've found the fix for the most common errors made in the REPL. Add the package, choose a safe word, and you're back in the game.
 
