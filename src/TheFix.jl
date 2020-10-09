@@ -53,7 +53,7 @@ module TheFix
             @info "Fixing $ex with $expr."
         elseif occursin("negative power", ex.msg)
             for (i, arg) in enumerate(expr.args)
-                if arg == :(.^)
+                if arg == :(.^) || i == 1
                     continue
                 elseif Main.eval(arg) isa Number && Main.eval(arg) == ex.val
                     expr.args[i] = :(float($arg))
