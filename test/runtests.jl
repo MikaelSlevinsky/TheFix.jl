@@ -25,9 +25,12 @@ TheFix.@safeword fix
         @test cleanse(:(factorrial(factoreal(4)))) == :(factorial(big(factorial(4))))
         @test cleanse(:(factorial.((21, 22)))) == :(factorial.(big.((21, 22))))
         @test cleanse(:(gcd(typemin(Int), typemin(Int)))) == :(gcd(widen(typemin(Int)), widen(typemin(Int))))
+        @test cleanse(:(gcd([typemin(Int), 1]))) == :(gcd(widen.([typemin(Int), 1])))
+        @test cleanse(:(gcd.((typemin(Int), 1), (typemin(Int), 2)))) == :(gcd.(widen.((typemin(Int), 1)), widen.((typemin(Int), 2))))
         @test cleanse(:(gcd(typemin(Int), Int(0)))) == :(gcd(widen(typemin(Int)), widen(Int(0))))
         s = x -> 1102938470918723 + x*(102394812390847 + x*12349812309487)
         @test cleanse(:($s(1323457//20345))) == :($s(widen(1323457 // 20345)))
+        @test cleanse(:($s.([1323457//20345, 1323458//20345]))) == :($s.(widen.([1323457 // 20345, 1323458 // 20345])))
     end
     @testset "DivideError" begin
         @test cleanse(:(2 ÷ 0)) == :(2 / 0)
