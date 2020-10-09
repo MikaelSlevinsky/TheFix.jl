@@ -28,8 +28,10 @@ module TheFix
     end
 
     function replace(expr::Symbol, ex::UndefVarError)
-        expr = Meta.parse(first(REPL.levsort(String(ex.var), REPL.accessible(Main))))
-        @info "Fixing $ex with $expr."
+        if !(first(string(expr)) == '.' && isdefined(Main, Symbol(string(expr)[2:end])))
+            expr = Meta.parse(first(REPL.levsort(String(ex.var), REPL.accessible(Main))))
+            @info "Fixing $ex with $expr."
+        end
         return expr
     end
 
@@ -51,16 +53,13 @@ module TheFix
             @info "Fixing $ex with $expr."
         elseif occursin("negative power", ex.msg)
             for (i, arg) in enumerate(expr.args)
-                if Main.eval(arg) isa Number && Main.eval(arg) == ex.val
+                if arg == :(.^)
+                elseif Main.eval(arg) isa Number && Main.eval(arg) == ex.val
                     expr.args[i] = :(float($arg))
-                elseif arg isa Expr
-                    if arg.head == :tuple
-                        for (j, argt) in enumerate(arg.args)
-                            if any(x -> x == ex.val, Main.eval(argt))
-                                arg.args[j] = :(float.($argt))
-                            end
-                        end
-                    end
+                elseif Main.eval(arg) isa AbstractArray && any(x -> x == ex.val, Main.eval(arg))
+                    expr.args[i] = :(float.($arg))
+                elseif Main.eval(arg) isa Tuple && any(x -> x == ex.val, Main.eval(arg))
+                    expr.args[i] = :(float.($arg))
                 end
             end
             @info "Fixing $ex with $expr."
@@ -97,7 +96,7 @@ module TheFix
                 end
             end
             @info "Fixing $ex with $expr."
-        elseif occursin("checked", ex.msg) || occursin("overflowed", ex.msg)
+        elseif occursin("checked", ex.msg) || occursin("overflow", ex.msg)
             for (i, arg) in enumerate(expr.args)
                 if Main.eval(arg) isa Integer || Main.eval(arg) isa Rational
                     expr.args[i] = :(widen($arg))

@@ -17,13 +17,17 @@ TheFix.@safeword fix
         @test cleanse(:(sqrt(-1.0))) == :(sqrt(Complex(-1.0)))
         @test cleanse(:(sqrt.((-1.0, 2.0)))) == :(sqrt.(Complex.((-1.0, 2.0))))
         @test cleanse(:(2^(1-3))) == :(2 ^ float(1 - 3))
+        @test cleanse(:(2 .^ (-2:2))) == :(2 .^ float.(-2:2))
+        @test cleanse(:(2 .^ (-2, -1, 0, 1, 2))) == :(2 .^ float.((-2, -1, 0, 1, 2)))
         @test cleanse(:(log2(-2.0))) == :(log2(Complex(-2.0)))
         @test cleanse(:([2 1; 1 0]^(1 - 3))) == :([2 1; 1 0] ^ float(1 - 3))
+        @test cleanse(:(exponent(0.0))) == :(exponent(0.0))
     end
     @testset "OverflowError" begin
         @test cleanse(:(factorial(21))) == :(factorial(big(21)))
         @test cleanse(:(factorrial(factoreal(4)))) == :(factorial(big(factorial(4))))
         @test cleanse(:(factorial.((21, 22)))) == :(factorial.(big.((21, 22))))
+        @test cleanse(:(binomial(67, 30))) == :(binomial(widen(67), widen(30)))
         @test cleanse(:(gcd(typemin(Int), typemin(Int)))) == :(gcd(widen(typemin(Int)), widen(typemin(Int))))
         @test cleanse(:(gcd([typemin(Int), 1]))) == :(gcd(widen.([typemin(Int), 1])))
         @test cleanse(:(gcd.((typemin(Int), 1), (typemin(Int), 2)))) == :(gcd.(widen.((typemin(Int), 1)), widen.((typemin(Int), 2))))
@@ -31,6 +35,7 @@ TheFix.@safeword fix
         s = x -> 1102938470918723 + x*(102394812390847 + x*12349812309487)
         @test cleanse(:($s(1323457//20345))) == :($s(widen(1323457 // 20345)))
         @test cleanse(:($s.([1323457//20345, 1323458//20345]))) == :($s.(widen.([1323457 // 20345, 1323458 // 20345])))
+        @test cleanse(:(-Rational{UInt}(1, 2))) == :(-(Rational{UInt}(1, 2)))
     end
     @testset "DivideError" begin
         @test cleanse(:(2 ÷ 0)) == :(2 / 0)
