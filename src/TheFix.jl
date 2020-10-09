@@ -103,6 +103,8 @@ module TheFix
             for (i, arg) in enumerate(expr.args)
                 if Main.eval(arg) isa Integer || Main.eval(arg) isa Rational
                     expr.args[i] = :(widen($arg))
+                elseif Main.eval(arg) isa AbstractArray
+                    expr.args[i] = :(widen.($arg))
                 elseif arg isa Expr
                     if arg.head == :tuple
                         for (j, argt) in enumerate(arg.args)

@@ -15,6 +15,7 @@ TheFix.@safeword fix
     end
     @testset "DomainError" begin
         @test cleanse(:(sqrt(-1.0))) == :(sqrt(Complex(-1.0)))
+        @test cleanse(:(sqrt.((-1.0, 2.0)))) == :(sqrt.(Complex.((-1.0, 2.0))))
         @test cleanse(:(2^(1-3))) == :(2 ^ float(1 - 3))
         @test cleanse(:(log2(-2.0))) == :(log2(Complex(-2.0)))
         @test cleanse(:([2 1; 1 0]^(1 - 3))) == :([2 1; 1 0] ^ float(1 - 3))
@@ -22,6 +23,7 @@ TheFix.@safeword fix
     @testset "OverflowError" begin
         @test cleanse(:(factorial(21))) == :(factorial(big(21)))
         @test cleanse(:(factorrial(factoreal(4)))) == :(factorial(big(factorial(4))))
+        @test cleanse(:(factorial.((21, 22)))) == :(factorial.(big.((21, 22))))
         @test cleanse(:(gcd(typemin(Int), typemin(Int)))) == :(gcd(widen(typemin(Int)), widen(typemin(Int))))
         @test cleanse(:(gcd(typemin(Int), Int(0)))) == :(gcd(widen(typemin(Int)), widen(Int(0))))
         s = x -> 1102938470918723 + x*(102394812390847 + x*12349812309487)
@@ -30,10 +32,12 @@ TheFix.@safeword fix
     @testset "DivideError" begin
         @test cleanse(:(2 ÷ 0)) == :(2 / 0)
         @test cleanse(:(div(2, 0, RoundUp))) == :(2 / 0)
-        @test cleanse(:(5 % 0)) == :(5 - 0 * (5 / 0))
+        @test cleanse(:(2 % 0)) == :(2 - 0 * (2 / 0))
+        @test cleanse(:(mod(2, 0))) == :(2 - 0 * (2 / 0))
         @test cleanse(:(rem(2, 0, RoundDown))) == :(2 - 0 * round(2 / 0, RoundDown))
         @test cleanse(:(fld(2, 0))) == :(2 / 0)
         @test cleanse(:(divrem(2, 0))) == :((2 / 0, 2 - 0 * (2 / 0)))
+        @test cleanse(:(divrem(2, 0, RoundNearest))) == :((2 / 0, 2 - 0 * round(2 / 0, RoundNearest)))
     end
     @testset "BoundsError" begin
         @test cleanse(:(A[7])) == :(A[clamp(7, extrema(eachindex(A))...)])
