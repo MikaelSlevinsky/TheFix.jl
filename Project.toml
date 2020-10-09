@@ -1,0 +1,11 @@
+name = "TheFix"
+uuid = "d833ac1a-14c4-4847-a042-dd2b1840831c"
+authors = ["MikaelSlevinsky <richard.slevinsky@umanitoba.ca>"]
+version = "0.1.0"
+
+[deps]
+REPL = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[compat]
+julia = "1"
