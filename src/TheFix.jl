@@ -54,6 +54,7 @@ module TheFix
         elseif occursin("negative power", ex.msg)
             for (i, arg) in enumerate(expr.args)
                 if arg == :(.^)
+                    continue
                 elseif Main.eval(arg) isa Number && Main.eval(arg) == ex.val
                     expr.args[i] = :(float($arg))
                 elseif Main.eval(arg) isa AbstractArray && any(x -> x == ex.val, Main.eval(arg))
