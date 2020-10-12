@@ -217,7 +217,7 @@ module TheFix
                 itr = findlast("# mode: julia", str)
                 itr = findprev("# mode: julia", str, first(itr))
                 nxt = itr[end] + 3
-                lst = first(findnext("\n", str, nxt))-1
+                lst = first(findnext("# time:", str, nxt))-2
                 expr = TheFix.cleanse(Meta.parse(str[nxt:lst]))
                 try
                     printstyled(io, "\n"*TheFix.REPL.JULIA_PROMPT, bold=true; color=202)
@@ -231,7 +231,7 @@ module TheFix
                     entry = """
                     # time: $(Libc.strftime("%Y-%m-%d %H:%M:%S %Z", time()))
                     # mode: julia
-                    \t$(string(expr))
+                    $(replace(string(expr), r"^"ms => "\t"))
                     """
                     seekend(file)
                     print(file, entry)

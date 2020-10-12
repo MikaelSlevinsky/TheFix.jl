@@ -12,6 +12,12 @@ TheFix.@safeword fix
         @test cleanse(:xx) == :x
         @test cleanse(:(exo(sim(1)))) == :(exp(sin(1)))
         @test cleanse(:(factorrial(factoreal(2)))) == :(factorial(factorial(2)))
+        @test cleanse(:(for k in 1:2 printline(k) end)) == :(for k in 1:2 println(k) end)
+        @test cleanse(:(for k in 1:2
+            printline(k)
+        end)) == :(for k in 1:2
+            println(k)
+        end)
     end
     @testset "DomainError" begin
         @test cleanse(:(sqrt(-1.0))) == :(sqrt(Complex(-1.0)))
