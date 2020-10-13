@@ -12,12 +12,6 @@ TheFix.@safeword fix
         @test cleanse(:xx) == :x
         @test cleanse(:(exo(sim(1)))) == :(exp(sin(1)))
         @test cleanse(:(factorrial(factoreal(2)))) == :(factorial(factorial(2)))
-        @test cleanse(:(for k in 1:2 printline(k) end)) == :(for k in 1:2 println(k) end)
-        @test cleanse(:(for k in 1:2
-            printline(k)
-        end)) == :(for k in 1:2
-            println(k)
-        end)
     end
     @testset "DomainError" begin
         @test cleanse(:(sqrt(-1.0))) == :(sqrt(Complex(-1.0)))
@@ -59,5 +53,29 @@ TheFix.@safeword fix
         @test cleanse(:(D[3, 3])) == :(A[clamp(3, extrema(axes(A, 1))...), 3])
         @test cleanse(:(E[3, 4])) == :(A[clamp(3, extrema(axes(A, 1))...), clamp(4, extrema(axes(A, 2))...)])
         @test cleanse(:(F[1:5, 1:5])) == :(A[intersect(1:5, axes(A, 1)), intersect(1:5, axes(A, 2))])
+    end
+    @testset "Code blocks" begin
+        @test cleanse(:(for k in 1:2 printline(k) end)) == :(for k in 1:2 println(k) end)
+        @test cleanse(:(for k in 1:2
+            printline(k)
+        end)) == :(for k in 1:2
+            println(k)
+        end)
+        @test cleanse(:(begin x = logarithm(4); y = sine(x) end)) == :(begin x = log(4); y = sin(x) end)
+        @test cleanse(:(begin
+            i = 1
+            while i < 10
+                global t = expp1(i)
+                printline("t = $t")
+                global i += 1
+            end
+        end)) == :(begin
+            i = 1
+            while i < 10
+                global t = expm1(i)
+                println("t = $t")
+                global i += 1
+            end
+        end)
     end
 end

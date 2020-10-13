@@ -1,7 +1,7 @@
 name = "TheFix"
 uuid = "d833ac1a-14c4-4847-a042-dd2b1840831c"
 authors = ["MikaelSlevinsky <richard.slevinsky@umanitoba.ca>"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 REPL = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
