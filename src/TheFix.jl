@@ -233,9 +233,11 @@ module TheFix
 
     """
         TheFix.@safeword(fix, safe)
+
     Create a safe word `fix` that may be used to correct common errors in the REPL.
     This creates a struct `fix` with no fields and the fix occurs by showing it.
     The Boolean variable `safe` indicates whether or not the user requests confirmation.
+
     # Examples
     ```jldoctest
     julia> TheFix.@safeword fix true
