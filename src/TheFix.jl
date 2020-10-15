@@ -33,7 +33,7 @@ module TheFix
             if safe
                 i = 1
                 while i ≤ length(possibilities)
-                    trial = Meta.parse(possibilities[i])
+                    trial = possibilities[i]
                     if i == 1
                         @info "Couldn't find $(ex.var). Did you mean $trial?"
                     else
@@ -41,7 +41,7 @@ module TheFix
                     end
                     answer = lowercase(strip(readline(stdin)))
                     if isempty(answer) || answer == "y" || answer == "yes"
-                        expr = trial
+                        expr = Meta.parse(trial)
                         break
                     elseif answer == "n" || answer == "no"
                         i += 1
