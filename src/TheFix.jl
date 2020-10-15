@@ -30,8 +30,8 @@ module TheFix
     function replace(expr::Symbol, ex::UndefVarError; safe::Bool=true)
         if !(first(string(expr)) == '.' && isdefined(Main, Symbol(string(expr)[2:end])))
             possibilities = REPL.levsort(String(ex.var), REPL.accessible(Main))
-            i = 1
             if safe
+                i = 1
                 while i ≤ length(possibilities)
                     trial = Meta.parse(possibilities[i])
                     if i == 1
@@ -54,7 +54,7 @@ module TheFix
                     expr = Meta.parse(strip(readline(stdin)))
                 end
             else
-                expr = Meta.parse(possibilities[i])
+                expr = Meta.parse(first(possibilities))
             end
             @info "Fixing $ex with $expr."
         end
