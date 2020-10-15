@@ -231,6 +231,42 @@ module TheFix
         Base.show_exception_stack(IOContext(io, :limit => true), bt)
     end
 
+    """
+        TheFix.@safeword(fix, safe)
+    Create a safe word `fix` that may be used to correct common errors in the REPL.
+    This creates a struct `fix` with no fields and the fix occurs by showing it.
+    The Boolean variable `safe` indicates whether or not the user requests confirmation.
+    # Examples
+    ```jldoctest
+    julia> TheFix.@safeword fix true
+
+    julia> sine(4)
+    ERROR: UndefVarError: sine not defined
+    Stacktrace:
+     [1] top-level scope at REPL[3]:1
+
+    julia> fix
+    [ Info: Couldn't find sine. Did you mean sin?
+    y
+    [ Info: Fixing UndefVarError(:sine) with sin.
+
+    julia> sin(4)
+    -0.7568024953079282
+
+    julia> TheFix.@safeword FIX false
+
+    julia> logarithm(3)
+    ERROR: UndefVarError: logarithm not defined
+    Stacktrace:
+     [1] top-level scope at REPL[7]:1
+
+    julia> FIX
+    [ Info: Fixing UndefVarError(:logarithm) with log.
+
+    julia> log(3)
+    1.0986122886681098
+    ```
+    """
     macro safeword(fix, safe)
         return esc(quote
             export $fix
