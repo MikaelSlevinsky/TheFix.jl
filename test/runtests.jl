@@ -5,13 +5,14 @@ import TheFix.cleanse
 A = ones(2, 3)
 x = 1.0
 
-TheFix.@safeword fix
+TheFix.@safeword fix true
+TheFix.@safeword FIX false
 
 @testset "Fixed Errors" begin
     @testset "UndefVarError" begin
-        @test cleanse(:xx) == :x
-        @test cleanse(:(exo(sim(1)))) == :(exp(sin(1)))
-        @test cleanse(:(factorrial(factoreal(2)))) == :(factorial(factorial(2)))
+        @test cleanse(:xx; safe = false) == :x
+        @test cleanse(:(exo(sim(1))); safe = false) == :(exp(sin(1)))
+        @test cleanse(:(factorrial(factoreal(2))); safe = false) == :(factorial(factorial(2)))
     end
     @testset "DomainError" begin
         @test cleanse(:(sqrt(-1.0))) == :(sqrt(Complex(-1.0)))
@@ -25,7 +26,7 @@ TheFix.@safeword fix
     end
     @testset "OverflowError" begin
         @test cleanse(:(factorial(21))) == :(factorial(big(21)))
-        @test cleanse(:(factorrial(factoreal(4)))) == :(factorial(big(factorial(4))))
+        @test cleanse(:(factorrial(factoreal(4))); safe = false) == :(factorial(big(factorial(4))))
         @test cleanse(:(factorial.((21, 22)))) == :(factorial.(big.((21, 22))))
         @test cleanse(:(binomial(67, 30))) == :(binomial(widen(67), widen(30)))
         @test cleanse(:(gcd(typemin(Int), typemin(Int)))) == :(gcd(widen(typemin(Int)), widen(typemin(Int))))
@@ -49,19 +50,19 @@ TheFix.@safeword fix
     end
     @testset "BoundsError" begin
         @test cleanse(:(A[7])) == :(A[clamp(7, extrema(eachindex(A))...)])
-        @test cleanse(:(B[1:7])) == :(A[intersect(1:7, eachindex(A))])
-        @test cleanse(:(D[3, 3])) == :(A[clamp(3, extrema(axes(A, 1))...), 3])
-        @test cleanse(:(E[3, 4])) == :(A[clamp(3, extrema(axes(A, 1))...), clamp(4, extrema(axes(A, 2))...)])
-        @test cleanse(:(F[1:5, 1:5])) == :(A[intersect(1:5, axes(A, 1)), intersect(1:5, axes(A, 2))])
+        @test cleanse(:(B[1:7]); safe = false) == :(A[intersect(1:7, eachindex(A))])
+        @test cleanse(:(D[3, 3]); safe = false) == :(A[clamp(3, extrema(axes(A, 1))...), 3])
+        @test cleanse(:(E[3, 4]); safe = false) == :(A[clamp(3, extrema(axes(A, 1))...), clamp(4, extrema(axes(A, 2))...)])
+        @test cleanse(:(F[1:5, 1:5]); safe = false) == :(A[intersect(1:5, axes(A, 1)), intersect(1:5, axes(A, 2))])
     end
     @testset "Code blocks" begin
-        @test cleanse(:(for k in 1:2 printline(k) end)) == :(for k in 1:2 println(k) end)
+        @test cleanse(:(for k in 1:2 printline(k) end); safe = false) == :(for k in 1:2 println(k) end)
         @test cleanse(:(for k in 1:2
             printline(k)
-        end)) == :(for k in 1:2
+        end); safe = false) == :(for k in 1:2
             println(k)
         end)
-        @test cleanse(:(begin x = logarithm(4); y = sine(x) end)) == :(begin x = log(4); y = sin(x) end)
+        @test cleanse(:(begin x = logarithm(4); y = sine(x) end); safe = false) == :(begin x = log(4); y = sin(x) end)
         @test cleanse(:(begin
             i = 1
             while i < 10
@@ -69,7 +70,7 @@ TheFix.@safeword fix
                 printline("t = $t")
                 global i += 1
             end
-        end)) == :(begin
+        end); safe = false) == :(begin
             i = 1
             while i < 10
                 global t = expm1(i)

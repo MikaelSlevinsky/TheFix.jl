@@ -1,41 +1,67 @@
 module TheFix
     using REPL
 
-    function cleanse(expr)
+    function cleanse(expr; safe::Bool=true)
         return expr
     end
 
-    function cleanse(expr::Symbol)
+    function cleanse(expr::Symbol; safe::Bool = true)
         try
             Main.eval(expr)
         catch ex
-            expr = replace(expr, ex)
+            expr = replace(expr, ex; safe = safe)
         end
         return expr
     end
 
-    function cleanse(expr::Expr)
+    function cleanse(expr::Expr; safe::Bool=true)
         start = expr.head == :(=) && expr.args[1] isa Symbol ? 2 : 1
         for i in start:length(expr.args)
-            expr.args[i] = cleanse(expr.args[i])
+            expr.args[i] = cleanse(expr.args[i]; safe = safe)
         end
         try
             Main.eval(expr)
         catch ex
-            expr = replace(expr, ex)
+            expr = replace(expr, ex; safe = safe)
         end
         return expr
     end
 
-    function replace(expr::Symbol, ex::UndefVarError)
+    function replace(expr::Symbol, ex::UndefVarError; safe::Bool=true)
         if !(first(string(expr)) == '.' && isdefined(Main, Symbol(string(expr)[2:end])))
-            expr = Meta.parse(first(REPL.levsort(String(ex.var), REPL.accessible(Main))))
+            possibilities = REPL.levsort(String(ex.var), REPL.accessible(Main))
+            i = 1
+            if safe
+                while i ≤ length(possibilities)
+                    trial = Meta.parse(possibilities[i])
+                    if i == 1
+                        @info "Couldn't find $(ex.var). Did you mean $trial?"
+                    else
+                        @info "Did you mean $trial?"
+                    end
+                    answer = lowercase(strip(readline(stdin)))
+                    if isempty(answer) || answer == "y" || answer == "yes"
+                        expr = trial
+                        break
+                    elseif answer == "n" || answer == "no"
+                        i += 1
+                    else
+                        println(stdout, "Unrecognized answer. Answer `y` or `n`.")
+                    end
+                end
+                if i > length(possibilities)
+                    @info "Couldn't find a fix. What did you mean?"
+                    expr = Meta.parse(strip(readline(stdin)))
+                end
+            else
+                expr = Meta.parse(possibilities[i])
+            end
             @info "Fixing $ex with $expr."
         end
         return expr
     end
 
-    function replace(expr::Expr, ex::DomainError)
+    function replace(expr::Expr, ex::DomainError; safe::Bool=true)
         if occursin("complex", ex.msg) || occursin("NaN result for non-NaN input.", ex.msg)
             for (i, arg) in enumerate(expr.args)
                 if Main.eval(arg) isa Number && Main.eval(arg) == ex.val
@@ -70,7 +96,7 @@ module TheFix
         return expr
     end
 
-    function replace(expr::Expr, ex::OverflowError)
+    function replace(expr::Expr, ex::OverflowError; safe::Bool=true)
         if occursin("factorial", ex.msg)
             for (i, arg) in enumerate(expr.args)
                 if Main.eval(arg) isa Integer
@@ -118,7 +144,7 @@ module TheFix
         return expr
     end
 
-    function replace(expr::Expr, ex::DivideError)
+    function replace(expr::Expr, ex::DivideError; safe::Bool=true)
         for (i, arg) in enumerate(expr.args)
             if arg == :div
                 while length(expr.args) > 3
@@ -164,7 +190,7 @@ module TheFix
         return expr
     end
 
-    function replace(expr::Expr, ex::BoundsError)
+    function replace(expr::Expr, ex::BoundsError; safe::Bool=true)
         if length(expr.args) == 2
             arg1 = expr.args[1]
             arg2 = expr.args[2]
@@ -194,7 +220,7 @@ module TheFix
         return expr
     end
 
-    function replace(expr, ex::Exception)
+    function replace(expr, ex::Exception; safe::Bool=true)
         @warn "Exception $ex not implemented."
         return expr
     end
@@ -205,7 +231,7 @@ module TheFix
         Base.show_exception_stack(IOContext(io, :limit => true), bt)
     end
 
-    macro safeword(fix)
+    macro safeword(fix, safe)
         return esc(quote
             export $fix
 
@@ -218,7 +244,7 @@ module TheFix
                 itr = findprev("# mode: julia", str, first(itr))
                 nxt = itr[end] + 3
                 lst = first(findnext("# time:", str, nxt))-2
-                expr = TheFix.cleanse(Meta.parse(str[nxt:lst]))
+                expr = TheFix.cleanse(Meta.parse(str[nxt:lst]); safe = $safe)
                 try
                     printstyled(io, "\n"*TheFix.REPL.JULIA_PROMPT, bold=true; color=202)
                     println(io, string(expr))

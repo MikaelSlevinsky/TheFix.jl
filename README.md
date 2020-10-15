@@ -8,7 +8,7 @@ Congratulations! You've found the fix for the most common errors made in the REP
 ```julia
 pkg> add TheFix
 
-julia> using TheFix; TheFix.@safeword fix
+julia> using TheFix; TheFix.@safeword fix true; TheFix.@safeword FIX false
 
 julia> z = logarithm(sine(4))
 ERROR: UndefVarError: sine not defined
@@ -16,7 +16,11 @@ Stacktrace:
  [1] top-level scope at REPL[2]:1
 
 julia> fix
+[ Info: Couldn't find logarithm. Did you mean log?
+y
 [ Info: Fixing UndefVarError(:logarithm) with log.
+[ Info: Couldn't find sine. Did you mean sin?
+yes
 [ Info: Fixing UndefVarError(:sine) with sin.
 [ Info: Fixing DomainError(-0.7568024953079282, "log will only return a complex result if called with a complex argument. Try log(Complex(x)).") with log(Complex(sin(4))).
 
@@ -28,7 +32,7 @@ ERROR: UndefVarError: factorreal not defined
 Stacktrace:
  [1] top-level scope at REPL[5]:1
 
-julia> fix
+julia> FIX
 [ Info: Fixing UndefVarError(:factorrial) with factorial.
 [ Info: Fixing UndefVarError(:factorreal) with factorial.
 [ Info: Fixing OverflowError("24 is too large to look up in the table; consider using `factorial(big(24))` instead") with factorial(big(factorial(4))).
@@ -42,7 +46,19 @@ Stacktrace:
  [1] top-level scope at REPL[8]:1
 
 julia> fix
-[ Info: Fixing UndefVarError(:divide) with div.
+[ Info: Couldn't find divide. Did you mean div?
+n
+[ Info: Did you mean divrem?
+no
+[ Info: Did you mean digits?
+n
+[ Info: Did you mean stride?
+no
+[ Info: Did you mean diff?
+n
+[ Info: Couldn't find a fix. What did you mean?
+fld
+[ Info: Fixing UndefVarError(:divide) with fld.
 [ Info: Fixing DivideError() with n / 0.
 
 julia> n / 0
@@ -59,7 +75,11 @@ Stacktrace:
  [1] top-level scope at REPL[12]:1
 
 julia> fix
+[ Info: Couldn't find square_root. Did you mean sqrt?
+
 [ Info: Fixing UndefVarError(:square_root) with sqrt.
+[ Info: Couldn't find B. Did you mean A?
+
 [ Info: Fixing UndefVarError(:B) with A.
 [ Info: Fixing BoundsError([-1.0 -1.0 -1.0; -1.0 -1.0 -1.0], (-3:5, 2:4)) with A[intersect(-3:5, axes(A, 1)), intersect(2:4, axes(A, 2))].
 [ Info: Fixing DomainError(-1.0, "sqrt will only return a complex result if called with a complex argument. Try sqrt(Complex(x)).") with sqrt.(Complex.(A[intersect(-3:5, axes(A, 1)), intersect(2:4, axes(A, 2))])).
