@@ -32,16 +32,15 @@ module TheFix
             possibilities = REPL.levsort(String(ex.var), REPL.accessible(Main))
             if safe
                 i = 1
-                while i ≤ length(possibilities)
-                    trial = possibilities[i]
+                while i ≤ min(length(possibilities), 3)
                     if i == 1
-                        @info "Couldn't find $(ex.var). Did you mean $trial?"
+                        @info "Couldn't find $(ex.var). Did you mean $(possibilities[i])?"
                     else
-                        @info "Did you mean $trial?"
+                        @info "Did you mean $(possibilities[i])?"
                     end
                     answer = lowercase(strip(readline(stdin)))
                     if isempty(answer) || answer == "y" || answer == "yes"
-                        expr = Meta.parse(trial)
+                        expr = Meta.parse(possibilities[i])
                         break
                     elseif answer == "n" || answer == "no"
                         i += 1
@@ -49,7 +48,7 @@ module TheFix
                         println(stdout, "Unrecognized answer. Answer `y` or `n`.")
                     end
                 end
-                if i > length(possibilities)
+                if i > min(length(possibilities), 3)
                     @info "Couldn't find a fix. What did you mean?"
                     expr = Meta.parse(strip(readline(stdin)))
                 end
@@ -281,7 +280,7 @@ module TheFix
                 itr = findlast("# mode: julia", str)
                 itr = findprev("# mode: julia", str, first(itr))
                 nxt = itr[end] + 3
-                lst = first(findnext("# time:", str, nxt))-2
+                lst = first(findnext("# time:", str, nxt)) - 2
                 expr = TheFix.cleanse(Meta.parse(str[nxt:lst]); safe = $safe)
                 try
                     printstyled(io, "\n"*TheFix.REPL.JULIA_PROMPT, bold=true; color=202)

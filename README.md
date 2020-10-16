@@ -52,10 +52,6 @@ n
 no
 [ Info: Did you mean digits?
 n
-[ Info: Did you mean stride?
-no
-[ Info: Did you mean diff?
-n
 [ Info: Couldn't find a fix. What did you mean?
 fld
 [ Info: Fixing UndefVarError(:divide) with fld.
