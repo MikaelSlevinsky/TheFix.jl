@@ -224,7 +224,7 @@ module TheFix
         return expr
     end
 
-    function display_error(io::IO, stack::Vector)
+    function display_error(io::IO, stack::Base.ExceptionStack)
         printstyled(io, "ERROR: "; bold=true, color=Base.error_color())
         bt = Any[ (x[1], Base.scrub_repl_backtrace(x[2])) for x in stack ]
         Base.show_exception_stack(IOContext(io, :limit => true), bt)
@@ -300,7 +300,7 @@ module TheFix
                     print(file, entry)
                     flush(file)
                 catch ex
-                    Base.invokelatest(TheFix.display_error, io, Base.catch_stack())
+                    Base.invokelatest(TheFix.display_error, io, current_exceptions())
                 end
             end
         end)
